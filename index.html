@@ -17,6 +17,10 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+    <!-- add in <head> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+
     <!-- Chosen Palette: Slate (Neutral Background) + Emerald (Primary Action) + Indigo (Secondary Data) -->
     <!-- Application Structure Plan: 
          The structure remains a dashboard (Summary, Timeline, Skills, Certifications), but a new control panel (Resume Input) is added at the top. 
@@ -115,15 +119,19 @@ A.L.I.G.N - Web Developer (Sept 2025 - Nov 2025) - Bangalore
 - Contributed to the development and maintenance of responsive client-facing web pages using modern HTML5, CSS3, and JavaScript.
 - Ensured cross-browser compatibility and optimized page performance, resulting in faster load times.
 
-Education:
+Education: 
 Indian Institute of Technology, Patna - B.Tech, CS AI and Cybersecurity (Aug 2025 - July 2028)
 PW Institute of Innovation - Computer Science and AI (Oct 2024 - Oct 2025)
 
 Skills: HTML5, CSS3, JavaScript, Next.js, Team Leadership, Client Relations, GitHub Actions, Cybersecurity, Data Structures.
 
 Certifications: Introduction to Front-End Development, Practical GitHub Actions, Foundations of Cybersecurity, Building BuiltX | AI Cybersecurity | IITP India.`
-            }</textarea>
-            <div class="flex items-center justify-between mt-4">
+            }</textarea> 
+            <input type="file" id="file-input" class="hidden" accept=".pdf,.txt,.md,.rtf">
+            <div class="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
+                <button id="upload-button" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg border border-slate-300 transition duration-200 flex items-center justify-center" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-file-upload mr-2"></i> Upload from File
+                </button>
                 <button id="generate-button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center" onclick="generateProfile()">
                     <i class="fas fa-robot mr-2"></i>
                     Generate Profile Dashboard
@@ -251,6 +259,11 @@ Certifications: Introduction to Front-End Development, Practical GitHub Actions,
 
     <!-- Logic Script -->
     <script>
+        // --- PDF.js setup ---
+const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib || window.pdfjsLib;
+if (pdfjsLib) {
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+}
         const API_KEY = "AIzaSyAiklN1SVS6zewGu_QDcJc7-UXd4kSHi0c";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
         
@@ -351,12 +364,30 @@ Certifications: Introduction to Front-End Development, Practical GitHub Actions,
             loadingIndicator: document.getElementById('loading-indicator'),
             generateButton: document.getElementById('generate-button'),
             errorDiv: document.getElementById('error-message'),
-            resumeInput: document.getElementById('resume-input')
+            resumeInput: document.getElementById('resume-input'),
+            fileInput: document.getElementById('file-input')
         };
 
         let state = {
             selectedTimelineId: null
         };
+
+        // --- Helper: extract text from PDF using PDF.js ---
+async function extractTextFromPDFFile(file) {
+if (!file) return '';
+// read file as ArrayBuffer
+const arrayBuffer = await file.arrayBuffer();
+const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+const pdf = await loadingTask.promise;
+let fullText = '';
+for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+const page = await pdf.getPage(pageNum);
+const textContent = await page.getTextContent();
+const pageText = textContent.items.map(i => i.str).join(' ');
+fullText += `\n\n--- Page ${pageNum} ---\n` + pageText;
+}
+return fullText.trim();
+}
 
         // --- API CALL & DATA PROCESSING ---
 
@@ -702,6 +733,39 @@ Certifications: Introduction to Front-End Development, Practical GitHub Actions,
             }
         }
 
+// --- PDF / File Input Handling ---
+async function handleFileInputChange(event) {
+const file = event.target.files[0];
+if (!file) return;
+
+
+// If it's a PDF, use PDF.js to extract text
+if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+try {
+const old = els.resumeInput.value;
+els.resumeInput.value = 'Extracting text from PDF — please wait...';
+const extracted = await extractTextFromPDFFile(file);
+els.resumeInput.value = extracted || old || '';
+} catch (err) {
+console.error('PDF extraction error', err);
+displayError('Failed to extract PDF text. Check console for details. If the PDF is scanned (images), client-side extraction won\'t work — you would need OCR.');
+}
+} else {
+// other text file types
+const reader = new FileReader();
+reader.onload = (e) => {
+els.resumeInput.value = e.target.result || '';
+};
+reader.readAsText(file);
+}
+
+
+// reset input so same file can be reselected
+event.target.value = '';
+}
+
+
+els.fileInput.addEventListener('change', handleFileInputChange);
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
