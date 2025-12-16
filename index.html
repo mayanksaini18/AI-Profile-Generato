@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Profile Generator</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <!-- FontAwesome (Icons) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- add in <head> -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
     <!-- Chosen Palette: Slate (Neutral Background) + Emerald (Primary Action) + Indigo (Secondary Data) -->
     <!-- Application Structure Plan: 
@@ -39,534 +44,726 @@
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc; /* Slate 50 */
-            color: #1e293b; /* Slate 800 */
-        }
-        
-        /* Chart Container Styling - Mandatory Requirements */
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc; /* Slate 50 */
+        color: #1e293b; /* Slate 800 */
+      }
+
+      /* Chart Container Styling - Mandatory Requirements */
+      .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 500px; /* Constrain width for readability */
+        margin-left: auto;
+        margin-right: auto;
+        height: 300px; /* Base height */
+        max-height: 400px;
+      }
+
+      @media (min-width: 768px) {
         .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px; /* Constrain width for readability */
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px; /* Base height */
-            max-height: 400px;
+          height: 350px;
         }
+      }
 
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
-        }
+      .timeline-node.active {
+        background-color: #10b981; /* Emerald 500 */
+        color: white;
+        border-color: #10b981;
+      }
 
-        .timeline-node.active {
-            background-color: #10b981; /* Emerald 500 */
-            color: white;
-            border-color: #10b981;
+      /* Spinner animation */
+      .spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border-left-color: #10b981;
+        animation: spin 1s ease infinite;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
-
-        /* Spinner animation */
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            border-left-color: #10b981;
-            animation: spin 1s ease infinite;
+        100% {
+          transform: rotate(360deg);
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+      }
     </style>
-</head>
-<body class="antialiased min-h-screen flex flex-col">
-
+  </head>
+  <body class="antialiased min-h-screen flex flex-col">
     <!-- Navigation / Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0 text-center md:text-left">
-                <h1 class="text-2xl font-bold text-slate-800">AI Profile Generator</h1>
-                <p class="text-emerald-600 font-medium">Generate an interactive dashboard from your resume text</p>
-            </div>
-            <div class="flex space-x-4 text-slate-500 text-sm">
-                <a href="#" class="hover:text-emerald-600 transition" onclick="document.getElementById('profile-data-form').scrollIntoView()"><i class="fas fa-file-upload mr-1"></i> Input Resume</a>
-            </div>
+      <div
+        class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center"
+      >
+        <div class="mb-4 md:mb-0 text-center md:text-left">
+          <h1 class="text-2xl font-bold text-slate-800">
+            AI Profile Generator
+          </h1>
+          <p class="text-emerald-600 font-medium">
+            Generate an interactive dashboard from your resume text
+          </p>
         </div>
+        <div class="flex space-x-4 text-slate-500 text-sm">
+          <a
+            href="#"
+            class="hover:text-emerald-600 transition"
+            onclick="document.getElementById('profile-data-form').scrollIntoView()"
+            ><i class="fas fa-file-upload mr-1"></i> Input Resume</a
+          >
+        </div>
+      </div>
     </header>
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-8 flex-grow space-y-12">
+      <!-- Input Panel -->
+      <section
+        id="profile-data-form"
+        class="bg-white p-6 rounded-xl shadow-lg border-2 border-emerald-500"
+      >
+        <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <i class="fas fa-keyboard text-emerald-500 mr-2"></i> Paste Resume
+          Text
+        </h2>
+        <p class="text-sm text-slate-500 mb-4">
+          Paste the full, raw text content of your resume into the box below.
+          The AI will structure and visualize the data.
+        </p>
+        <textarea
+          id="resume-input"
+          rows="8"
+          class="w-full p-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-sm"
+          placeholder="Paste your Name, Summary, Experience, Education, and Skills here..."
+        ></textarea
+        >
+        <input
+          type="file"
+          id="file-input"
+          class="hidden"
+          accept=".pdf,.txt,.md,.rtf"
+        />
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4"
+        >
+          <button
+            id="upload-button"
+            class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg border border-slate-300 transition duration-200 flex items-center justify-center"
+            onclick="document.getElementById('file-input').click()"
+          >
+            <i class="fas fa-file-upload mr-2"></i> Upload from File
+          </button>
+          <button
+            id="generate-button"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center"
+            onclick="generateProfile()"
+          >
+            <i class="fas fa-robot mr-2"></i>
+            Generate Profile Dashboard
+          </button>
+          <div
+            id="loading-indicator"
+            class="hidden flex items-center text-emerald-600"
+          >
+            <div class="spinner mr-2"></div>
+            Processing profile...
+          </div>
+        </div>
+        <div
+          id="error-message"
+          class="mt-4 text-red-600 font-medium hidden"
+        ></div>
+      </section>
 
-        <!-- Input Panel -->
-        <section id="profile-data-form" class="bg-white p-6 rounded-xl shadow-lg border-2 border-emerald-500">
+      <!-- Dynamic Dashboard Sections - Start Hidden/Placeholder -->
+      <div id="dashboard-content" class="space-y-12">
+        <!-- SECTION 1: Executive Overview -->
+        <section
+          id="overview"
+          class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-white p-6 rounded-xl shadow-sm border border-slate-100"
+        >
+          <div id="summary-section">
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-                <i class="fas fa-keyboard text-emerald-500 mr-2"></i> Paste Resume Text
+              <i class="fas fa-user-circle text-emerald-500 mr-2"></i>
+              Professional Summary
             </h2>
-            <p class="text-sm text-slate-500 mb-4">Paste the full, raw text content of your resume into the box below. The AI will structure and visualize the data.</p>
-            <textarea id="resume-input" rows="8" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 text-sm" placeholder="Paste your Name, Summary, Experience, Education, and Skills here...">${
-                /* Pre-populate with previous data for quick testing */
-                `Mayank Saini
-mayanksaini0416@gmail.com | LinkedIn: www.linkedin.com/in/mayanksaini18 | Portfolio: mayank-dev-folio.vercel.app/
-
-Summary: Currently working as a Web Developer at A.L.I.G.N, contributing to the creation and optimization of responsive client-facing web pages using HTML5, CSS3, and JavaScript. Focused on ensuring cross-browser compatibility and enhancing page performance. Pursuing education at IIT Patna, with a foundation in computer science and data structures.
-
-Experience:
-A.L.I.G.N - Web Developer (Sept 2025 - Nov 2025) - Bangalore
-- Contributed to the development and maintenance of responsive client-facing web pages using modern HTML5, CSS3, and JavaScript.
-- Ensured cross-browser compatibility and optimized page performance, resulting in faster load times.
-
-Education: 
-Indian Institute of Technology, Patna - B.Tech, CS AI and Cybersecurity (Aug 2025 - July 2028)
-PW Institute of Innovation - Computer Science and AI (Oct 2024 - Oct 2025)
-
-Skills: HTML5, CSS3, JavaScript, Next.js, Team Leadership, Client Relations, GitHub Actions, Cybersecurity, Data Structures.
-
-Certifications: Introduction to Front-End Development, Practical GitHub Actions, Foundations of Cybersecurity, Building BuiltX | AI Cybersecurity | IITP India.`
-            }</textarea> 
-            <input type="file" id="file-input" class="hidden" accept=".pdf,.txt,.md,.rtf">
-            <div class="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
-                <button id="upload-button" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg border border-slate-300 transition duration-200 flex items-center justify-center" onclick="document.getElementById('file-input').click()">
-                    <i class="fas fa-file-upload mr-2"></i> Upload from File
-                </button>
-                <button id="generate-button" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center" onclick="generateProfile()">
-                    <i class="fas fa-robot mr-2"></i>
-                    Generate Profile Dashboard
-                </button>
-                <div id="loading-indicator" class="hidden flex items-center text-emerald-600">
-                    <div class="spinner mr-2"></div>
-                    Processing profile...
-                </div>
+            <p id="summary-text" class="text-slate-600 leading-relaxed mb-6">
+              Paste your resume text above and click 'Generate' to see your
+              dynamic profile summary here.
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div
+                class="bg-slate-50 p-4 rounded-lg border-l-4 border-emerald-400"
+              >
+                <span
+                  class="block text-xs text-slate-400 uppercase font-bold tracking-wider"
+                  >Experience Duration</span
+                >
+                <span id="exp-duration" class="text-lg font-bold text-slate-700"
+                  >N/A</span
+                >
+                <span class="text-xs text-slate-500 block"
+                  >Total Work Experience</span
+                >
+              </div>
+              <div
+                class="bg-slate-50 p-4 rounded-lg border-l-4 border-indigo-400"
+              >
+                <span
+                  class="block text-xs text-slate-400 uppercase font-bold tracking-wider"
+                  >Primary Education</span
+                >
+                <span id="edu-school" class="text-lg font-bold text-slate-700"
+                  >N/A</span
+                >
+                <span id="edu-degree" class="text-xs text-slate-500 block"
+                  >Degree/Focus</span
+                >
+              </div>
             </div>
-            <div id="error-message" class="mt-4 text-red-600 font-medium hidden"></div>
+          </div>
+
+          <!-- Visualization: Competency Matrix -->
+          <div
+            class="flex flex-col items-center justify-center bg-slate-50 rounded-xl p-4"
+          >
+            <h3
+              class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wide"
+            >
+              Competency Profile
+            </h3>
+            <div class="chart-container">
+              <canvas id="competencyChart"></canvas>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 text-center max-w-xs">
+              Visual representation of inferred skill balance.
+            </p>
+          </div>
         </section>
 
-        <!-- Dynamic Dashboard Sections - Start Hidden/Placeholder -->
-        <div id="dashboard-content" class="space-y-12">
-            
-            <!-- SECTION 1: Executive Overview -->
-            <section id="overview" class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <div id="summary-section">
-                    <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
-                        <i class="fas fa-user-circle text-emerald-500 mr-2"></i> Professional Summary
-                    </h2>
-                    <p id="summary-text" class="text-slate-600 leading-relaxed mb-6">
-                        Paste your resume text above and click 'Generate' to see your dynamic profile summary here.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-emerald-400">
-                            <span class="block text-xs text-slate-400 uppercase font-bold tracking-wider">Experience Duration</span>
-                            <span id="exp-duration" class="text-lg font-bold text-slate-700">N/A</span>
-                            <span class="text-xs text-slate-500 block">Total Work Experience</span>
-                        </div>
-                        <div class="bg-slate-50 p-4 rounded-lg border-l-4 border-indigo-400">
-                            <span class="block text-xs text-slate-400 uppercase font-bold tracking-wider">Primary Education</span>
-                            <span id="edu-school" class="text-lg font-bold text-slate-700">N/A</span>
-                            <span id="edu-degree" class="text-xs text-slate-500 block">Degree/Focus</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Visualization: Competency Matrix -->
-                <div class="flex flex-col items-center justify-center bg-slate-50 rounded-xl p-4">
-                    <h3 class="text-sm font-semibold text-slate-500 mb-2 uppercase tracking-wide">Competency Profile</h3>
-                    <div class="chart-container">
-                        <canvas id="competencyChart"></canvas>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2 text-center max-w-xs">
-                        Visual representation of inferred skill balance.
-                    </p>
-                </div>
-            </section>
+        <!-- SECTION 2: The Journey (Interactive Timeline) -->
+        <section id="journey">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center">
+              <i class="fas fa-history text-emerald-500 mr-2"></i> Professional
+              & Academic Journey
+            </h2>
+            <p class="text-slate-500 text-sm mt-1">
+              Select a milestone below to view detailed achievements and
+              responsibilities.
+            </p>
+          </div>
 
-            <!-- SECTION 2: The Journey (Interactive Timeline) -->
-            <section id="journey">
-                <div class="mb-6">
-                    <h2 class="text-xl font-bold text-slate-800 flex items-center">
-                        <i class="fas fa-history text-emerald-500 mr-2"></i> Professional & Academic Journey
-                    </h2>
-                    <p class="text-slate-500 text-sm mt-1">
-                        Select a milestone below to view detailed achievements and responsibilities.
-                    </p>
-                </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <!-- Timeline Navigation (Left) -->
+            <div
+              class="md:col-span-4 lg:col-span-3 flex flex-col space-y-3"
+              id="timeline-nav"
+            >
+              <div class="text-center text-slate-300 py-12">
+                Waiting for Data...
+              </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-                    <!-- Timeline Navigation (Left) -->
-                    <div class="md:col-span-4 lg:col-span-3 flex flex-col space-y-3" id="timeline-nav">
-                        <div class="text-center text-slate-300 py-12">Waiting for Data...</div>
-                    </div>
-
-                    <!-- Detail View (Right) -->
-                    <div class="md:col-span-8 lg:col-span-9">
-                        <div id="timeline-content" class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full flex flex-col justify-center transition-all duration-300">
-                            <div class="text-center text-slate-400 py-12">
-                                <i class="fas fa-mouse-pointer text-4xl mb-4 opacity-50"></i>
-                                <p>Select a timeline item to view details</p>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Detail View (Right) -->
+            <div class="md:col-span-8 lg:col-span-9">
+              <div
+                id="timeline-content"
+                class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full flex flex-col justify-center transition-all duration-300"
+              >
+                <div class="text-center text-slate-400 py-12">
+                  <i class="fas fa-mouse-pointer text-4xl mb-4 opacity-50"></i>
+                  <p>Select a timeline item to view details</p>
                 </div>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <!-- SECTION 3: Technical Arsenal -->
-            <section id="skills" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Skill Lists -->
-                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                    <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                        <i class="fas fa-code text-emerald-500 mr-2"></i> Core Competencies & Skills
-                    </h2>
-                    
-                    <div id="skills-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="text-center text-slate-300 py-8 md:col-span-2">Waiting for Data...</div>
-                    </div>
-                </div>
+        <!-- SECTION 3: Technical Arsenal -->
+        <section id="skills" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Skill Lists -->
+          <div
+            class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 p-6"
+          >
+            <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+              <i class="fas fa-code text-emerald-500 mr-2"></i> Core
+              Competencies & Skills
+            </h2>
 
-                <!-- Focus Visualization -->
-                <div class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col items-center">
-                    <h3 class="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wide">Domain Focus</h3>
-                    <div class="chart-container">
-                        <canvas id="skillsDoughnut"></canvas>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <p id="focus-summary" class="text-sm text-slate-600">
-                            Chart will show the inferred technical distribution.
-                        </p>
-                    </div>
-                </div>
-            </section>
+            <div id="skills-list" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="text-center text-slate-300 py-8 md:col-span-2">
+                Waiting for Data...
+              </div>
+            </div>
+          </div>
 
-            <!-- SECTION 4: Certifications -->
-            <section id="certifications" class="bg-indigo-50 rounded-xl p-8 border border-indigo-100">
-                <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
-                    <i class="fas fa-certificate text-indigo-500 mr-2"></i> Certifications & Training
-                </h2>
-                <div id="certifications-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="text-center text-slate-300 py-4 md:col-span-4">Waiting for Data...</div>
-                </div>
-            </section>
-        </div>
+          <!-- Focus Visualization -->
+          <div
+            class="lg:col-span-1 bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex flex-col items-center"
+          >
+            <h3
+              class="text-sm font-semibold text-slate-500 mb-4 uppercase tracking-wide"
+            >
+              Domain Focus
+            </h3>
+            <div class="chart-container">
+              <canvas id="skillsDoughnut"></canvas>
+            </div>
+            <div class="mt-4 text-center">
+              <p id="focus-summary" class="text-sm text-slate-600">
+                Chart will show the inferred technical distribution.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- SECTION 4: Certifications -->
+        <section
+          id="certifications"
+          class="bg-indigo-50 rounded-xl p-8 border border-indigo-100"
+        >
+          <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+            <i class="fas fa-certificate text-indigo-500 mr-2"></i>
+            Certifications & Training
+          </h2>
+          <div
+            id="certifications-grid"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            <div class="text-center text-slate-300 py-4 md:col-span-4">
+              Waiting for Data...
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer class="bg-slate-800 text-slate-300 py-8 mt-8">
-        <div class="container mx-auto px-4 text-center">
-            <p class="mb-2">Powered by Google Gemini</p>
-            <p class="text-xs text-slate-500">Note: Data extraction is performed by the AI model; review for accuracy.</p>
-        </div>
+      <div class="container mx-auto px-4 text-center">
+        <p class="mb-2">Powered by Google Gemini</p>
+        <p class="text-xs text-slate-500">
+          Note: Data extraction is performed by the AI model; review for
+          accuracy.
+        </p>
+      </div>
     </footer>
 
     <!-- Logic Script -->
     <script>
-        // --- PDF.js setup ---
-const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib || window.pdfjsLib;
-if (pdfjsLib) {
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-}
-        const API_KEY = "AIzaSyAiklN1SVS6zewGu_QDcJc7-UXd4kSHi0c";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${API_KEY}`;
-        
-        let profileData = null;
-        let competencyChartInstance = null;
-        let skillsDoughnutInstance = null;
+      // --- PDF.js setup ---
+      const pdfjsLib =
+        window["pdfjs-dist/build/pdf"] || window.pdfjsLib || window.pdfjsLib;
+      if (pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+      }
 
-        // --- JSON Schema for Structured Output ---
-        const responseSchema = {
+      let profileData = null;
+      let competencyChartInstance = null;
+      let skillsDoughnutInstance = null;
+
+      // --- JSON Schema for Structured Output ---
+      const responseSchema = {
+        type: "OBJECT",
+        properties: {
+          name: {
+            type: "STRING",
+            description: "Full name extracted from the resume.",
+          },
+          email: { type: "STRING", description: "Primary email address." },
+          linkedin: { type: "STRING", description: "LinkedIn URL." },
+          portfolio: {
+            type: "STRING",
+            description: "Portfolio or personal website URL.",
+          },
+          summary: {
+            type: "STRING",
+            description:
+              "The core professional summary or objective, rewritten slightly for clarity.",
+          },
+          experienceDuration: {
+            type: "STRING",
+            description:
+              "Total calculated work experience duration (e.g., '3 Months' or '2 Years').",
+          },
+          primaryEducation: {
             type: "OBJECT",
             properties: {
-                name: { type: "STRING", description: "Full name extracted from the resume." },
-                email: { type: "STRING", description: "Primary email address." },
-                linkedin: { type: "STRING", description: "LinkedIn URL." },
-                portfolio: { type: "STRING", description: "Portfolio or personal website URL." },
-                summary: { type: "STRING", description: "The core professional summary or objective, rewritten slightly for clarity." },
-                experienceDuration: { type: "STRING", description: "Total calculated work experience duration (e.g., '3 Months' or '2 Years')." },
-                primaryEducation: { type: "OBJECT", properties: { school: { type: "STRING" }, degree: { type: "STRING" } } },
-                
-                // Timeline Array (Work & Education)
-                timeline: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            id: { type: "INTEGER" },
-                            role: { type: "STRING" },
-                            org: { type: "STRING" },
-                            date: { type: "STRING" },
-                            type: { type: "STRING", enum: ["work", "education"] },
-                            location: { type: "STRING" },
-                            details: { type: "ARRAY", items: { type: "STRING" } }
-                        },
-                        required: ["id", "role", "org", "date", "type", "details"]
-                    }
-                },
-                
-                // Skills Map
-                skills: {
-                    type: "OBJECT",
-                    properties: {
-                        webTech: { type: "ARRAY", items: { type: "STRING" } },
-                        toolsDevOps: { type: "ARRAY", items: { type: "STRING" } },
-                        academicCore: { type: "ARRAY", items: { type: "STRING" } },
-                        softSkills: { type: "ARRAY", items: { type: "STRING" } }
-                    }
-                },
-
-                // Certifications Array
-                certifications: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            title: { type: "STRING" },
-                            subtitle: { type: "STRING" }
-                        },
-                        required: ["title"]
-                    }
-                },
-
-                // Chart Data (Inferred)
-                chartData: {
-                    type: "OBJECT",
-                    properties: {
-                        radar: {
-                            type: "OBJECT",
-                            properties: {
-                                labels: { type: "ARRAY", items: { type: "STRING" } },
-                                data: { type: "ARRAY", items: { type: "INTEGER" } }
-                            }
-                        },
-                        doughnut: {
-                            type: "OBJECT",
-                            properties: {
-                                labels: { type: "ARRAY", items: { type: "STRING" } },
-                                data: { type: "ARRAY", items: { type: "INTEGER" } }
-                            }
-                        }
-                    }
-                }
+              school: { type: "STRING" },
+              degree: { type: "STRING" },
             },
-            required: ["name", "summary", "timeline", "skills", "certifications", "chartData"]
-        };
+          },
 
+          // Timeline Array (Work & Education)
+          timeline: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                id: { type: "INTEGER" },
+                role: { type: "STRING" },
+                org: { type: "STRING" },
+                date: { type: "STRING" },
+                type: { type: "STRING", enum: ["work", "education"] },
+                location: { type: "STRING" },
+                details: { type: "ARRAY", items: { type: "STRING" } },
+              },
+              required: ["id", "role", "org", "date", "type", "details"],
+            },
+          },
 
-        // --- DOM ELEMENTS & STATE ---
-        const els = {
-            timelineNav: document.getElementById('timeline-nav'),
-            timelineContent: document.getElementById('timeline-content'),
-            summaryText: document.getElementById('summary-text'),
-            expDuration: document.getElementById('exp-duration'),
-            eduSchool: document.getElementById('edu-school'),
-            eduDegree: document.getElementById('edu-degree'),
-            skillsList: document.getElementById('skills-list'),
-            certsGrid: document.getElementById('certifications-grid'),
-            focusSummary: document.getElementById('focus-summary'),
-            loadingIndicator: document.getElementById('loading-indicator'),
-            generateButton: document.getElementById('generate-button'),
-            errorDiv: document.getElementById('error-message'),
-            resumeInput: document.getElementById('resume-input'),
-            fileInput: document.getElementById('file-input')
-        };
+          // Skills Map
+          skills: {
+            type: "OBJECT",
+            properties: {
+              webTech: { type: "ARRAY", items: { type: "STRING" } },
+              toolsDevOps: { type: "ARRAY", items: { type: "STRING" } },
+              academicCore: { type: "ARRAY", items: { type: "STRING" } },
+              softSkills: { type: "ARRAY", items: { type: "STRING" } },
+            },
+          },
 
-        let state = {
-            selectedTimelineId: null
-        };
+          // Certifications Array
+          certifications: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                title: { type: "STRING" },
+                subtitle: { type: "STRING" },
+              },
+              required: ["title"],
+            },
+          },
 
-        // --- Helper: extract text from PDF using PDF.js ---
-async function extractTextFromPDFFile(file) {
-if (!file) return '';
-// read file as ArrayBuffer
-const arrayBuffer = await file.arrayBuffer();
-const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-const pdf = await loadingTask.promise;
-let fullText = '';
-for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-const page = await pdf.getPage(pageNum);
-const textContent = await page.getTextContent();
-const pageText = textContent.items.map(i => i.str).join(' ');
-fullText += `\n\n--- Page ${pageNum} ---\n` + pageText;
-}
-return fullText.trim();
-}
+          // Chart Data (Inferred)
+          chartData: {
+            type: "OBJECT",
+            properties: {
+              radar: {
+                type: "OBJECT",
+                properties: {
+                  labels: { type: "ARRAY", items: { type: "STRING" } },
+                  data: { type: "ARRAY", items: { type: "INTEGER" } },
+                },
+              },
+              doughnut: {
+                type: "OBJECT",
+                properties: {
+                  labels: { type: "ARRAY", items: { type: "STRING" } },
+                  data: { type: "ARRAY", items: { type: "INTEGER" } },
+                },
+              },
+            },
+          },
+        },
+        required: [
+          "name",
+          "summary",
+          "timeline",
+          "skills",
+          "certifications",
+          "chartData",
+        ],
+      };
 
-        // --- API CALL & DATA PROCESSING ---
+      // --- DOM ELEMENTS & STATE ---
+      const els = {
+        timelineNav: document.getElementById("timeline-nav"),
+        timelineContent: document.getElementById("timeline-content"),
+        summaryText: document.getElementById("summary-text"),
+        expDuration: document.getElementById("exp-duration"),
+        eduSchool: document.getElementById("edu-school"),
+        eduDegree: document.getElementById("edu-degree"),
+        skillsList: document.getElementById("skills-list"),
+        certsGrid: document.getElementById("certifications-grid"),
+        focusSummary: document.getElementById("focus-summary"),
+        loadingIndicator: document.getElementById("loading-indicator"),
+        generateButton: document.getElementById("generate-button"),
+        errorDiv: document.getElementById("error-message"),
+        resumeInput: document.getElementById("resume-input"),
+        fileInput: document.getElementById("file-input"),
+      };
 
-        async function fetchWithBackoff(url, options, retries = 3) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) {
-                        // Attempt to read error message from body if available
-                        const errorBody = await response.text();
-                        throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorBody.substring(0, 150)}...`);
-                    }
-                    return response;
-                } catch (error) {
-                    if (i === retries - 1) throw error;
-                    const delay = Math.pow(2, i) * 1000;
-                    //console.log(`Retrying API call in ${delay / 1000}s...`); 
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                }
+      let state = {
+        selectedTimelineId: null,
+      };
+
+      // --- Helper: extract text from PDF using PDF.js ---
+      async function extractTextFromPDFFile(file) {
+        if (!file) return "";
+        // read file as ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        let fullText = "";
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map((i) => i.str).join(" ");
+          fullText += `\n\n--- Page ${pageNum} ---\n` + pageText;
+        }
+        return fullText.trim();
+      }
+
+      // --- API CALL & DATA PROCESSING ---
+
+      async function fetchWithBackoff(url, options, retries = 3) {
+        for (let i = 0; i < retries; i++) {
+          try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+              // Attempt to read error message from body if available
+              const errorBody = await response.text();
+              throw new Error(
+                `HTTP error! Status: ${
+                  response.status
+                }. Message: ${errorBody.substring(0, 150)}...`
+              );
             }
+            return response;
+          } catch (error) {
+            if (i === retries - 1) throw error;
+            const delay = Math.pow(2, i) * 1000;
+            //console.log(`Retrying API call in ${delay / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+        }
+      }
+
+      async function generateProfile() {
+        const resumeText = els.resumeInput.value.trim();
+        // Hardcoded key for public use (Ensure this key has HTTP Referrer restrictions in Google Cloud Console)
+        const apiKey = "AIzaSyC83md2baGH9frXQ-ro0yX6-6ZK_Gzv_gk";
+
+        if (!resumeText) {
+          displayError("Please paste your resume content before generating.");
+          return;
         }
 
-        async function generateProfile() {
-            const resumeText = els.resumeInput.value.trim();
-            if (!resumeText) {
-                displayError("Please paste your resume content before generating.");
-                return;
-            }
+        // UI State: Loading
+        els.generateButton.disabled = true;
+        els.loadingIndicator.classList.remove("hidden");
+        els.errorDiv.classList.add("hidden");
+        clearDashboard();
 
-            // UI State: Loading
-            els.generateButton.disabled = true;
-            els.loadingIndicator.classList.remove('hidden');
-            els.errorDiv.classList.add('hidden');
-            clearDashboard();
+        const systemPrompt =
+          "You are an expert Information Architect and Data Extractor. Your task is to analyze the provided raw resume text and convert it into a strictly structured JSON format. Infer details like skill proficiency levels (0-100) for the chart data based on the depth and frequency of keywords in the resume. Categorize all skills accurately. Calculate the total work experience duration. Ensure all required fields in the schema are populated accurately.";
 
-            const systemPrompt = "You are an expert Information Architect and Data Extractor. Your task is to analyze the provided raw resume text and convert it into a strictly structured JSON format. Infer details like skill proficiency levels (0-100) for the chart data based on the depth and frequency of keywords in the resume. Categorize all skills accurately. Calculate the total work experience duration. Ensure all required fields in the schema are populated accurately.";
+        const userQuery = `Analyze the following resume text and return the structured JSON object: \n\n--- RESUME TEXT ---\n${resumeText}\n---`;
 
-            const userQuery = `Analyze the following resume text and return the structured JSON object: \n\n--- RESUME TEXT ---\n${resumeText}\n---`;
-            
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: responseSchema
-                }
-            };
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-            const options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            };
+        const payload = {
+          contents: [{ parts: [{ text: userQuery }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: responseSchema,
+          },
+        };
 
-            try {
-                const response = await fetchWithBackoff(API_URL, options);
-                const result = await response.json();
+        const options = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        };
 
-                if (!result.candidates || result.candidates.length === 0 || !result.candidates[0].content?.parts?.[0]?.text) {
-                    throw new Error("API returned an invalid or empty response structure. Response JSON: " + JSON.stringify(result).substring(0, 200) + '...');
-                }
+        try {
+          const response = await fetchWithBackoff(API_URL, options);
+          const result = await response.json();
 
-                const jsonString = result.candidates[0].content.parts[0].text;
-                profileData = JSON.parse(jsonString);
+          if (
+            !result.candidates ||
+            result.candidates.length === 0 ||
+            !result.candidates[0].content?.parts?.[0]?.text
+          ) {
+            throw new Error(
+              "API returned an invalid or empty response structure. Response JSON: " +
+                JSON.stringify(result).substring(0, 200) +
+                "..."
+            );
+          }
 
-                // Set initial selection and render
-                if (profileData.timeline.length > 0) {
-                    state.selectedTimelineId = profileData.timeline[0].id;
-                }
-                
-                updateDashboard(profileData);
+          const jsonString = result.candidates[0].content.parts[0].text;
+          profileData = JSON.parse(jsonString);
 
-            } catch (error) {
-                console.error("API or Parsing Error:", error);
-                // Check for common local issues (CORS is the most frequent when running locally)
-                if (error.message.includes('Failed to fetch') || error.message.includes('network error')) {
-                    displayError(`Connection Error: The application could not reach the Gemini API. If running locally (file://), this is likely due to Cross-Origin (CORS) security restrictions in your browser. Please try running it from a local web server (e.g., VS Code Live Server) or use the hosted environment.`);
-                } else if (error.message.includes('Status: 403') || error.message.includes('Status: 400')) {
-                    displayError(`API Request Failed (Status ${error.message.match(/Status: (\d+)/)?.[1] || 'Unknown'}): Check your API key or the content of the request. Details in console.`);
-                } else if (error.message.includes('JSON')) {
-                    displayError(`Data Error: The AI returned invalid JSON. Please refine your resume input. Details in console.`);
-                } else {
-                    displayError(`An unexpected error occurred: ${error.message}. See console for details.`);
-                }
-                clearDashboard();
-            } finally {
-                // UI State: Done
-                els.generateButton.disabled = false;
-                els.loadingIndicator.classList.add('hidden');
-            }
+          // Set initial selection and render
+          if (profileData.timeline.length > 0) {
+            state.selectedTimelineId = profileData.timeline[0].id;
+          }
+
+          updateDashboard(profileData);
+        } catch (error) {
+          console.error("API or Parsing Error:", error);
+          // Check for common local issues (CORS is the most frequent when running locally)
+          if (
+            error.message.includes("Failed to fetch") ||
+            error.message.includes("network error")
+          ) {
+            displayError(
+              `Connection Error: The application could not reach the Gemini API. If running locally (file://), this is likely due to Cross-Origin (CORS) security restrictions in your browser. Please try running it from a local web server (e.g., VS Code Live Server) or use the hosted environment.`
+            );
+          } else if (
+            error.message.includes("Status: 403") ||
+            error.message.includes("Status: 400")
+          ) {
+            displayError(
+              `API Request Failed (Status ${
+                error.message.match(/Status: (\d+)/)?.[1] || "Unknown"
+              }): Check your API key or the content of the request. Details in console.`
+            );
+          } else if (error.message.includes("JSON")) {
+            displayError(
+              `Data Error: The AI returned invalid JSON. Please refine your resume input. Details in console.`
+            );
+          } else {
+            displayError(
+              `An unexpected error occurred: ${error.message}. See console for details.`
+            );
+          }
+          clearDashboard();
+        } finally {
+          // UI State: Done
+          els.generateButton.disabled = false;
+          els.loadingIndicator.classList.add("hidden");
         }
-        
-        // --- UI RENDERING FUNCTIONS ---
+      }
 
-        function displayError(message) {
-            // Create a styled alert box for better visibility
-            els.errorDiv.innerHTML = `
+      // --- UI RENDERING FUNCTIONS ---
+
+      function displayError(message) {
+        // Create a styled alert box for better visibility
+        els.errorDiv.innerHTML = `
                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                     <strong class="font-bold">Error:</strong>
                     <span class="block sm:inline">${message}</span>
                 </div>
             `;
-            els.errorDiv.classList.remove('hidden');
+        els.errorDiv.classList.remove("hidden");
+      }
+
+      function clearDashboard() {
+        // Reset main elements to placeholders
+        els.summaryText.innerText =
+          "Paste your resume text above and click 'Generate' to see your dynamic profile summary here.";
+        els.expDuration.innerText = "N/A";
+        els.eduSchool.innerText = "N/A";
+        els.eduDegree.innerText = "Degree/Focus";
+        els.timelineNav.innerHTML = `<div class="text-center text-slate-300 py-12">Waiting for Data...</div>`;
+        els.timelineContent.innerHTML = `<div class="text-center text-slate-400 py-12"><i class="fas fa-mouse-pointer text-4xl mb-4 opacity-50"></i><p>Select a timeline item to view details</p></div>`;
+        els.skillsList.innerHTML = `<div class="text-center text-slate-300 py-8 md:col-span-2">Waiting for Data...</div>`;
+        els.certsGrid.innerHTML = `<div class="text-center text-slate-300 py-4 md:col-span-4">Waiting for Data...</div>`;
+        els.focusSummary.innerText =
+          "Chart will show the inferred technical distribution.";
+
+        // Destroy existing charts
+        if (competencyChartInstance) competencyChartInstance.destroy();
+        if (skillsDoughnutInstance) skillsDoughnutInstance.destroy();
+      }
+
+      function updateDashboard(data) {
+        // 1. Header/Summary Updates
+        document.querySelector("h1.text-2xl").innerText =
+          data.name || "AI Profile Generator";
+        els.summaryText.innerHTML = data.summary
+          ? `<strong>${data.name || "Profile"}</strong>: ${data.summary}`
+          : "Summary not available.";
+        els.expDuration.innerText = data.experienceDuration || "N/A";
+
+        if (data.primaryEducation) {
+          els.eduSchool.innerText = data.primaryEducation.school || "N/A";
+          els.eduDegree.innerText =
+            data.primaryEducation.degree || "Degree/Focus";
         }
 
-        function clearDashboard() {
-            // Reset main elements to placeholders
-            els.summaryText.innerText = "Paste your resume text above and click 'Generate' to see your dynamic profile summary here.";
-            els.expDuration.innerText = 'N/A';
-            els.eduSchool.innerText = 'N/A';
-            els.eduDegree.innerText = 'Degree/Focus';
-            els.timelineNav.innerHTML = `<div class="text-center text-slate-300 py-12">Waiting for Data...</div>`;
-            els.timelineContent.innerHTML = `<div class="text-center text-slate-400 py-12"><i class="fas fa-mouse-pointer text-4xl mb-4 opacity-50"></i><p>Select a timeline item to view details</p></div>`;
-            els.skillsList.innerHTML = `<div class="text-center text-slate-300 py-8 md:col-span-2">Waiting for Data...</div>`;
-            els.certsGrid.innerHTML = `<div class="text-center text-slate-300 py-4 md:col-span-4">Waiting for Data...</div>`;
-            els.focusSummary.innerText = "Chart will show the inferred technical distribution.";
-            
-            // Destroy existing charts
-            if (competencyChartInstance) competencyChartInstance.destroy();
-            if (skillsDoughnutInstance) skillsDoughnutInstance.destroy();
+        // 2. Timeline
+        renderTimeline();
+
+        // 3. Skills
+        renderSkills(data.skills);
+
+        // 4. Certifications
+        renderCertifications(data.certifications);
+
+        // 5. Charts
+        initCharts(data.chartData);
+      }
+
+      function renderTimeline() {
+        if (
+          !profileData ||
+          !profileData.timeline ||
+          profileData.timeline.length === 0
+        ) {
+          els.timelineNav.innerHTML = `<div class="text-center text-slate-400 py-12">No timeline data extracted.</div>`;
+          els.timelineContent.innerHTML = `<div class="text-center text-slate-400 py-12"><i class="fas fa-exclamation-circle text-4xl mb-4 opacity-50"></i><p>No timeline data available.</p></div>`;
+          return;
         }
 
-        function updateDashboard(data) {
-            // 1. Header/Summary Updates
-            document.querySelector('h1.text-2xl').innerText = data.name || "AI Profile Generator";
-            els.summaryText.innerHTML = data.summary ? `<strong>${data.name || 'Profile'}</strong>: ${data.summary}` : 'Summary not available.';
-            els.expDuration.innerText = data.experienceDuration || 'N/A';
-            
-            if (data.primaryEducation) {
-                els.eduSchool.innerText = data.primaryEducation.school || 'N/A';
-                els.eduDegree.innerText = data.primaryEducation.degree || 'Degree/Focus';
-            }
-
-            // 2. Timeline
-            renderTimeline();
-            
-            // 3. Skills
-            renderSkills(data.skills);
-
-            // 4. Certifications
-            renderCertifications(data.certifications);
-
-            // 5. Charts
-            initCharts(data.chartData);
-        }
-
-        function renderTimeline() {
-            if (!profileData || !profileData.timeline || profileData.timeline.length === 0) {
-                 els.timelineNav.innerHTML = `<div class="text-center text-slate-400 py-12">No timeline data extracted.</div>`;
-                 els.timelineContent.innerHTML = `<div class="text-center text-slate-400 py-12"><i class="fas fa-exclamation-circle text-4xl mb-4 opacity-50"></i><p>No timeline data available.</p></div>`;
-                 return;
-            }
-            
-            // Render Nav Items
-            els.timelineNav.innerHTML = profileData.timeline.map(item => `
+        // Render Nav Items
+        els.timelineNav.innerHTML = profileData.timeline
+          .map(
+            (item) => `
                 <button 
                     onclick="handleTimelineClick(${item.id})"
-                    class="timeline-node w-full text-left p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-all duration-200 shadow-sm flex items-start group ${item.id === state.selectedTimelineId ? 'active ring-2 ring-emerald-500 border-emerald-500' : ''}"
+                    class="timeline-node w-full text-left p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-all duration-200 shadow-sm flex items-start group ${
+                      item.id === state.selectedTimelineId
+                        ? "active ring-2 ring-emerald-500 border-emerald-500"
+                        : ""
+                    }"
                 >
                     <div class="mr-3 mt-1">
-                        <i class="fas ${item.type === 'work' ? 'fa-briefcase' : 'fa-graduation-cap'} ${item.id === state.selectedTimelineId ? 'text-white' : 'text-slate-400 group-hover:text-emerald-500'}"></i>
+                        <i class="fas ${
+                          item.type === "work"
+                            ? "fa-briefcase"
+                            : "fa-graduation-cap"
+                        } ${
+              item.id === state.selectedTimelineId
+                ? "text-white"
+                : "text-slate-400 group-hover:text-emerald-500"
+            }"></i>
                     </div>
                     <div>
-                        <div class="font-bold text-sm ${item.id === state.selectedTimelineId ? 'text-white' : 'text-slate-700'}">${item.role}</div>
-                        <div class="text-xs ${item.id === state.selectedTimelineId ? 'text-emerald-100' : 'text-slate-500'}">${item.org}</div>
-                        <div class="text-xs mt-1 ${item.id === state.selectedTimelineId ? 'text-emerald-100' : 'text-slate-400'}">${item.date}</div>
+                        <div class="font-bold text-sm ${
+                          item.id === state.selectedTimelineId
+                            ? "text-white"
+                            : "text-slate-700"
+                        }">${item.role}</div>
+                        <div class="text-xs ${
+                          item.id === state.selectedTimelineId
+                            ? "text-emerald-100"
+                            : "text-slate-500"
+                        }">${item.org}</div>
+                        <div class="text-xs mt-1 ${
+                          item.id === state.selectedTimelineId
+                            ? "text-emerald-100"
+                            : "text-slate-400"
+                        }">${item.date}</div>
                     </div>
                 </button>
-            `).join('');
+            `
+          )
+          .join("");
 
-            // Render Content
-            const selectedItem = profileData.timeline.find(t => t.id === state.selectedTimelineId);
-            if (selectedItem) {
-                els.timelineContent.innerHTML = `
+        // Render Content
+        const selectedItem = profileData.timeline.find(
+          (t) => t.id === state.selectedTimelineId
+        );
+        if (selectedItem) {
+          els.timelineContent.innerHTML = `
                     <div class="animate-fade-in">
                         <div class="flex items-center justify-between mb-4 pb-4 border-b border-slate-100">
                             <div>
-                                <h3 class="text-2xl font-bold text-slate-800">${selectedItem.role}</h3>
-                                <p class="text-emerald-600 font-medium">${selectedItem.org}</p>
+                                <h3 class="text-2xl font-bold text-slate-800">${
+                                  selectedItem.role
+                                }</h3>
+                                <p class="text-emerald-600 font-medium">${
+                                  selectedItem.org
+                                }</p>
                             </div>
                             <div class="text-right hidden sm:block">
                                 <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold">${selectedItem.type.toUpperCase()}</span>
@@ -574,204 +771,268 @@ return fullText.trim();
                         </div>
                         
                         <div class="mb-6 flex items-center text-sm text-slate-500">
-                            <i class="far fa-calendar-alt mr-2"></i> ${selectedItem.date}
-                            ${selectedItem.location ? `<span class="mx-3">|</span><i class="fas fa-map-marker-alt mr-2"></i> ${selectedItem.location}` : ''}
+                            <i class="far fa-calendar-alt mr-2"></i> ${
+                              selectedItem.date
+                            }
+                            ${
+                              selectedItem.location
+                                ? `<span class="mx-3">|</span><i class="fas fa-map-marker-alt mr-2"></i> ${selectedItem.location}`
+                                : ""
+                            }
                         </div>
 
                         <h4 class="font-bold text-slate-700 mb-3">Key Highlights & Responsibilities:</h4>
                         <ul class="space-y-3">
-                            ${selectedItem.details.map(detail => `
+                            ${selectedItem.details
+                              .map(
+                                (detail) => `
                                 <li class="flex items-start text-slate-600 leading-relaxed">
                                     <i class="fas fa-chevron-right text-emerald-500 mt-1.5 mr-3 text-xs flex-shrink-0"></i>
                                     <span>${detail}</span>
                                 </li>
-                            `).join('')}
+                            `
+                              )
+                              .join("")}
                         </ul>
                     </div>
                 `;
-            }
         }
+      }
 
-        function renderSkills(skills) {
-            let html = '';
-            const skillMap = [
-                { key: 'webTech', title: 'Web Technologies', icon: 'fa-laptop-code', tagClass: 'bg-indigo-50 text-indigo-700 border-indigo-100' },
-                { key: 'toolsDevOps', title: 'Tools & DevOps', icon: 'fa-tools', tagClass: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
-                { key: 'academicCore', title: 'Academic Focus', icon: 'fa-brain', tagClass: 'bg-slate-100 text-slate-700' },
-                { key: 'softSkills', title: 'Soft Skills', icon: 'fa-users', tagClass: 'bg-yellow-50 text-yellow-700 border-yellow-100' }
-            ];
+      function renderSkills(skills) {
+        let html = "";
+        const skillMap = [
+          {
+            key: "webTech",
+            title: "Web Technologies",
+            icon: "fa-laptop-code",
+            tagClass: "bg-indigo-50 text-indigo-700 border-indigo-100",
+          },
+          {
+            key: "toolsDevOps",
+            title: "Tools & DevOps",
+            icon: "fa-tools",
+            tagClass: "bg-emerald-50 text-emerald-700 border-emerald-100",
+          },
+          {
+            key: "academicCore",
+            title: "Academic Focus",
+            icon: "fa-brain",
+            tagClass: "bg-slate-100 text-slate-700",
+          },
+          {
+            key: "softSkills",
+            title: "Soft Skills",
+            icon: "fa-users",
+            tagClass: "bg-yellow-50 text-yellow-700 border-yellow-100",
+          },
+        ];
 
-            skillMap.forEach(({ key, title, icon, tagClass }) => {
-                const skillItems = skills[key] || [];
-                if (skillItems.length > 0) {
-                    html += `
+        skillMap.forEach(({ key, title, icon, tagClass }) => {
+          const skillItems = skills[key] || [];
+          if (skillItems.length > 0) {
+            html += `
                         <div>
                             <h3 class="font-bold text-slate-700 border-b border-slate-200 pb-2 mb-3">
                                 <i class="fas ${icon} text-indigo-500 mr-2"></i>${title}
                             </h3>
                             <div class="flex flex-wrap gap-2">
-                                ${key === 'softSkills' 
-                                    ? `<ul class="text-sm text-slate-600 space-y-1">${skillItems.map(s => `<li><i class="fas fa-check text-emerald-500 text-xs mr-2"></i>${s}</li>`).join('')}</ul>`
-                                    : skillItems.map(s => `<span class="px-3 py-1 ${tagClass} rounded-full text-sm font-medium border">${s}</span>`).join('')
+                                ${
+                                  key === "softSkills"
+                                    ? `<ul class="text-sm text-slate-600 space-y-1">${skillItems
+                                        .map(
+                                          (s) =>
+                                            `<li><i class="fas fa-check text-emerald-500 text-xs mr-2"></i>${s}</li>`
+                                        )
+                                        .join("")}</ul>`
+                                    : skillItems
+                                        .map(
+                                          (s) =>
+                                            `<span class="px-3 py-1 ${tagClass} rounded-full text-sm font-medium border">${s}</span>`
+                                        )
+                                        .join("")
                                 }
                             </div>
                         </div>
                     `;
-                }
-            });
+          }
+        });
 
-            els.skillsList.innerHTML = html || `<div class="text-center text-slate-400 py-8 md:col-span-2">No structured skill data extracted.</div>`;
+        els.skillsList.innerHTML =
+          html ||
+          `<div class="text-center text-slate-400 py-8 md:col-span-2">No structured skill data extracted.</div>`;
+      }
+
+      function renderCertifications(certs) {
+        if (!certs || certs.length === 0) {
+          els.certsGrid.innerHTML = `<div class="text-center text-slate-400 py-4 md:col-span-4">No certifications extracted.</div>`;
+          return;
         }
-        
-        function renderCertifications(certs) {
-            if (!certs || certs.length === 0) {
-                els.certsGrid.innerHTML = `<div class="text-center text-slate-400 py-4 md:col-span-4">No certifications extracted.</div>`;
-                return;
-            }
 
-            els.certsGrid.innerHTML = certs.map(cert => `
+        els.certsGrid.innerHTML = certs
+          .map(
+            (cert) => `
                 <div class="bg-white p-5 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                     <div class="text-emerald-500 mb-2"><i class="fas fa-certificate fa-lg"></i></div>
-                    <h4 class="font-bold text-slate-800 text-sm mb-1">${cert.title}</h4>
-                    ${cert.subtitle ? `<p class="text-xs text-slate-500">${cert.subtitle}</p>` : ''}
+                    <h4 class="font-bold text-slate-800 text-sm mb-1">${
+                      cert.title
+                    }</h4>
+                    ${
+                      cert.subtitle
+                        ? `<p class="text-xs text-slate-500">${cert.subtitle}</p>`
+                        : ""
+                    }
                 </div>
-            `).join('');
-        }
+            `
+          )
+          .join("");
+      }
 
+      // --- EVENT HANDLERS ---
+      window.handleTimelineClick = (id) => {
+        state.selectedTimelineId = id;
+        renderTimeline();
+      };
 
-        // --- EVENT HANDLERS ---
-        window.handleTimelineClick = (id) => {
-            state.selectedTimelineId = id;
-            renderTimeline();
-        };
+      // --- CHARTS CONFIGURATION ---
+      function initCharts(chartData) {
+        // Destroy existing instances if they exist
+        if (competencyChartInstance) competencyChartInstance.destroy();
+        if (skillsDoughnutInstance) skillsDoughnutInstance.destroy();
 
-        // --- CHARTS CONFIGURATION ---
-        function initCharts(chartData) {
-            // Destroy existing instances if they exist
-            if (competencyChartInstance) competencyChartInstance.destroy();
-            if (skillsDoughnutInstance) skillsDoughnutInstance.destroy();
-
-            // 1. Radar Chart: Competency Matrix
-            const ctxRadar = document.getElementById('competencyChart').getContext('2d');
-            competencyChartInstance = new Chart(ctxRadar, {
-                type: 'radar',
-                data: {
-                    labels: chartData.radar.labels,
-                    datasets: [{
-                        label: 'Proficiency Focus',
-                        data: chartData.radar.data,
-                        backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald 500
-                        borderColor: 'rgba(16, 185, 129, 1)',
-                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-                        borderWidth: 2
-                    }]
+        // 1. Radar Chart: Competency Matrix
+        const ctxRadar = document
+          .getElementById("competencyChart")
+          .getContext("2d");
+        competencyChartInstance = new Chart(ctxRadar, {
+          type: "radar",
+          data: {
+            labels: chartData.radar.labels,
+            datasets: [
+              {
+                label: "Proficiency Focus",
+                data: chartData.radar.data,
+                backgroundColor: "rgba(16, 185, 129, 0.2)", // Emerald 500
+                borderColor: "rgba(16, 185, 129, 1)",
+                pointBackgroundColor: "rgba(16, 185, 129, 1)",
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                angleLines: { color: "#e2e8f0" },
+                grid: { color: "#e2e8f0" },
+                pointLabels: {
+                  font: { size: 11, family: "Inter" },
+                  color: "#64748b",
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: '#e2e8f0' },
-                            grid: { color: '#e2e8f0' },
-                            pointLabels: {
-                                font: { size: 11, family: 'Inter' },
-                                color: '#64748b'
-                            },
-                            ticks: { display: false, max: 100 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
+                ticks: { display: false, max: 100 },
+              },
+            },
+            plugins: {
+              legend: { display: false },
+            },
+          },
+        });
 
-            // 2. Doughnut Chart: Skill Focus Distribution
-            const ctxDoughnut = document.getElementById('skillsDoughnut').getContext('2d');
-            skillsDoughnutInstance = new Chart(ctxDoughnut, {
-                type: 'doughnut',
-                data: {
-                    labels: chartData.doughnut.labels,
-                    datasets: [{
-                        data: chartData.doughnut.data,
-                        backgroundColor: [
-                            '#10b981', // Emerald 500
-                            '#6366f1', // Indigo 500
-                            '#f59e0b', // Amber 500
-                            '#ef4444' // Red 500 (if needed)
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
+        // 2. Doughnut Chart: Skill Focus Distribution
+        const ctxDoughnut = document
+          .getElementById("skillsDoughnut")
+          .getContext("2d");
+        skillsDoughnutInstance = new Chart(ctxDoughnut, {
+          type: "doughnut",
+          data: {
+            labels: chartData.doughnut.labels,
+            datasets: [
+              {
+                data: chartData.doughnut.data,
+                backgroundColor: [
+                  "#10b981", // Emerald 500
+                  "#6366f1", // Indigo 500
+                  "#f59e0b", // Amber 500
+                  "#ef4444", // Red 500 (if needed)
+                ],
+                borderWidth: 0,
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: "70%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  usePointStyle: true,
+                  padding: 20,
+                  font: { size: 10, family: "Inter" },
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: { size: 10, family: 'Inter' }
-                            }
-                        }
-                    }
-                }
-            });
+              },
+            },
+          },
+        });
 
-            // Update focus summary text based on highest doughnut value
-            if (chartData.doughnut.data.length > 0) {
-                const maxIndex = chartData.doughnut.data.indexOf(Math.max(...chartData.doughnut.data));
-                const primaryFocus = chartData.doughnut.labels[maxIndex];
-                els.focusSummary.innerHTML = `
+        // Update focus summary text based on highest doughnut value
+        if (chartData.doughnut.data.length > 0) {
+          const maxIndex = chartData.doughnut.data.indexOf(
+            Math.max(...chartData.doughnut.data)
+          );
+          const primaryFocus = chartData.doughnut.labels[maxIndex];
+          els.focusSummary.innerHTML = `
                     The primary focus is currently on <span class="text-emerald-600 font-bold">${primaryFocus}</span>, indicating a strong foundational direction.
                 `;
-            } else {
-                els.focusSummary.innerText = "Chart data not available.";
-            }
+        } else {
+          els.focusSummary.innerText = "Chart data not available.";
+        }
+      }
+
+      // --- PDF / File Input Handling ---
+      async function handleFileInputChange(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // If it's a PDF, use PDF.js to extract text
+        if (
+          file.type === "application/pdf" ||
+          file.name.toLowerCase().endsWith(".pdf")
+        ) {
+          try {
+            const old = els.resumeInput.value;
+            els.resumeInput.value = "Extracting text from PDF — please wait...";
+            const extracted = await extractTextFromPDFFile(file);
+            els.resumeInput.value = extracted || old || "";
+          } catch (err) {
+            console.error("PDF extraction error", err);
+            displayError(
+              "Failed to extract PDF text. Check console for details. If the PDF is scanned (images), client-side extraction won't work — you would need OCR."
+            );
+          }
+        } else {
+          // other text file types
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            els.resumeInput.value = e.target.result || "";
+          };
+          reader.readAsText(file);
         }
 
-// --- PDF / File Input Handling ---
-async function handleFileInputChange(event) {
-const file = event.target.files[0];
-if (!file) return;
+        // reset input so same file can be reselected
+        event.target.value = "";
+      }
 
+      els.fileInput.addEventListener("change", handleFileInputChange);
 
-// If it's a PDF, use PDF.js to extract text
-if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-try {
-const old = els.resumeInput.value;
-els.resumeInput.value = 'Extracting text from PDF — please wait...';
-const extracted = await extractTextFromPDFFile(file);
-els.resumeInput.value = extracted || old || '';
-} catch (err) {
-console.error('PDF extraction error', err);
-displayError('Failed to extract PDF text. Check console for details. If the PDF is scanned (images), client-side extraction won\'t work — you would need OCR.');
-}
-} else {
-// other text file types
-const reader = new FileReader();
-reader.onload = (e) => {
-els.resumeInput.value = e.target.result || '';
-};
-reader.readAsText(file);
-}
-
-
-// reset input so same file can be reselected
-event.target.value = '';
-}
-
-
-els.fileInput.addEventListener('change', handleFileInputChange);
-
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Initial render with placeholders
-            clearDashboard();
-        });
+      // --- INITIALIZATION ---
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initial render with placeholders
+        clearDashboard();
+      });
     </script>
-</body>
+  </body>
 </html>
