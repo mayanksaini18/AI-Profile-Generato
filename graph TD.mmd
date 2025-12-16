@@ -1,0 +1,27 @@
+graph TD
+  User[User] --> UI[Web Interface]
+
+  subgraph "Client Side Processing"
+    UI --> Check{Input Type}
+    Check -->|PDF| PDF[PDF.js Extraction]
+    Check -->|Text| Raw[Raw Text]
+    PDF --> Payload[Prepare API Payload]
+    Raw --> Payload
+  end
+
+  Payload --> API[Google Gemini API]
+
+  subgraph "AI Processing"
+    API --> LLM[Gemini 2.5 Flash]
+    LLM --> JSON[Structured JSON]
+  end
+
+  JSON --> UI
+
+  subgraph "Dashboard Rendering"
+    UI --> Summary[Executive Summary]
+    UI --> Timeline[Interactive Timeline]
+    UI --> Radar[Competency Radar]
+    UI --> Donut[Skill Focus Chart]
+  end
+
