@@ -6,36 +6,36 @@ A client-side web application that transforms raw resume text or PDF files into 
 ## 📊 How It Works
 
 The application takes unstructured text (like a resume), sends it to the Gemini API with a strict schema instruction, and renders the returned structured data into charts and timelines.
+## 🧠 How It Works
 
 ```mermaid
 graph TD
-    User([User]) -->|1. Paste Text or Upload PDF| UI[Web Interface]
-    
-    subgraph "Client Side Processing"
-        UI -->|Check Input Type| Check{Is PDF?}
-        Check -- Yes --> PDF[PDF.js Extraction]
-        Check -- No --> Raw[Raw Text]
-        PDF --> Payload[Prepare API Payload]
-        Raw --> Payload
-    end
+  User[User] --> UI[Web Interface]
 
-    Payload -->|2. Send Prompt| API[Google Gemini API]
-    
-    subgraph "AI Processing"
-        API -->|Analyze Context| LLM[Gemini 2.5 Flash]
-        LLM -->|Extract Entities| JSON[Structured JSON]
-    end
+  subgraph "Client Side Processing"
+    UI --> Check{Input Type}
+    Check -->|PDF| PDF[PDF.js Extraction]
+    Check -->|Text| Raw[Raw Text]
+    PDF --> Payload[Prepare API Payload]
+    Raw --> Payload
+  end
 
-    JSON -->|3. Return Data| UI
-    
-    subgraph "Dashboard Rendering"
-        UI -->|Parse JSON| Render
-        Render --> Summary[Executive Summary]
-        Render --> Timeline[Interactive Timeline]
-        Render --> Radar[Competency Radar Chart]
-        Render --> Doughnut[Skill Focus Chart]
-    end
-```
+  Payload --> API[Google Gemini API]
+
+  subgraph "AI Processing"
+    API --> LLM[Gemini 2.5 Flash]
+    LLM --> JSON[Structured JSON]
+  end
+
+  JSON --> UI
+
+  subgraph "Dashboard Rendering"
+    UI --> Summary[Executive Summary]
+    UI --> Timeline[Interactive Timeline]
+    UI --> Radar[Competency Radar]
+    UI --> Donut[Skill Focus Chart]
+  end
+
 
 ## ✨ Features
 
